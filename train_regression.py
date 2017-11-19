@@ -153,7 +153,7 @@ def Conv2Rad(x):
 def show_result(imgfile, result):
     scale = 3
     IMG = '/home/zhuxiuhong/src/PycharmProjects/insulator/data/insulator_image'
-    im = cv2.imread(IMG + "/" + imgfile)                    
+    im = cv2.imread(imgfile)                    
     im = cv2.resize(im, (int(im.shape[1] / scale), int(im.shape[0] / scale)))
     x1 = int(im.shape[1]/2)
     y1 = int(im.shape[0]/2)
@@ -223,23 +223,28 @@ def ui_test(filename, model_dir):
 
     # switch to evaluate mode
     model.eval()
-        
-    ui_transofoms = transforms.Compose([transforms.Scale(scale_size),
+    
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ui_transforms = transforms.Compose([transforms.Scale(scale_size),
                         transforms.CenterCrop(image_size),
                         transforms.RandomHorizontalFlip(),
                         transforms.ToTensor(),
                       normalize,
                        ])
-    image = Image.open(filename)
+    image = Image.open(filename).convert('RGB')
     image = ui_transforms(image)
         
     image_var = torch.autograd.Variable(image, volatile=True)
-    y_pred = model(image_var)
+    print(image_var.size())
+    image_var_4D = image_var.unsqueeze(0)
+    print(image_var_4D)
+    y_pred = model(image_var_4D)
 
     x = Conv2Rad(y_pred.data).tolist()
     
     temp_dict = {}
-    temp_dict['image_id'] = filepath + '.jpg'
+    temp_dict['image_id'] = filename
+    print filename
     temp_dict['label_id'] = x
                     
     show_result(temp_dict['image_id'], temp_dict['label_id'])
@@ -448,6 +453,6 @@ if __name__ == '__main__':
     # main(mode="validate",resume='./model_best.pth.tar')
     # main(mode="test", resume='./models/checkpoint.pth.tar')
     
-    filename='./data/insulator_image/000024.jpg'
+    filename='./data/insulator_image/000221.jpg'
     model_dir = './models/checkpoint.pth.tar'   
     ui_test(filename, model_dir)
