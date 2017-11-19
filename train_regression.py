@@ -206,8 +206,20 @@ def test(test_loader, model):
     print("Done.")
 
 # test in one image
-def ui_test(filename, model):
-    result = []
+def ui_test(filename, model_dir):
+    if not os.path.isfile(filename):
+        print("file is None")
+        return 0.0
+
+    # create model 
+    arch = 'resnet152'
+    model = models.__dict__[arch](pretrained=True)
+    model.fc = nn.Linear(2048, 1)
+    model = torch.nn.DataParallel(model).cuda()
+    checkpoint = torch.load(model_dir)           
+    model.load_state_dict(checkpoint['state_dict'])
+    print('Load trained model sucessful...')
+    cudnn.benchmark = True
 
     # switch to evaluate mode
     model.eval()
@@ -233,6 +245,8 @@ def ui_test(filename, model):
     show_result(temp_dict['image_id'], temp_dict['label_id'])
 
     print("Done.")
+
+    return x
 
 
 def save_checkpoint(state, is_best, filename=checkpoint_path):
@@ -389,8 +403,6 @@ def main(mode="train", resume=False, filename=None):
         train_loader, val_loader, test_loader = pre_data()
 
         if mode == "test":
-            filename='./data/insulator_image/000024.jpg'
-            ui_test(filename,model)
             test(test_loader, model)
             return
 
@@ -434,4 +446,8 @@ def main(mode="train", resume=False, filename=None):
 if __name__ == '__main__':
     # main(mode="train")
     # main(mode="validate",resume='./model_best.pth.tar')
-    main(mode="test", resume='./models/checkpoint.pth.tar')
+    # main(mode="test", resume='./models/checkpoint.pth.tar')
+    
+    filename='./data/insulator_image/000024.jpg'
+    model_dir = './models/checkpoint.pth.tar'   
+    ui_test(filename, model_dir)
