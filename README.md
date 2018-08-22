@@ -23,7 +23,7 @@ $ python train_regression.py
 # Experiment
 ## The yellow line indicates the direction of the insulator slanting
 ### test1.jpg
--![alt text](result/test1.jpg "test1 image")
+![alt text](result/test1.jpg "test1 image")
 ### test2.jpg
--![alt text](result/test2.jpg "test2 image")
+![alt text](result/test2.jpg "test2 image")
 
